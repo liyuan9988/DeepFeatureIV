@@ -1,0 +1,1 @@
+{"n_repeat": 20, "data": {"data_name": "dsprite", "data_size": [5000, 10000]}, "train_params": {"lam1": 0.1, "lam2": 0.1, "stage1_iter": 20, "covariate_iter": 0, "stage2_iter": 1, "n_epoch": 100, "split_ratio": 0.5, "treatment_weight_decay": 0.1, "instrumental_weight_decay": 0.1, "covariate_weight_decay": 0.1}}

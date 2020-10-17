@@ -1,0 +1,7 @@
+torch==1.5.0
+torchvision==0.6.0
+numpy==1.18.4
+ray==0.8.5
+click==7.1.2
+requests==2.23.0
+scikit-learn==0.23.1

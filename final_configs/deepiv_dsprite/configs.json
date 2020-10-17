@@ -1,0 +1,1 @@
+{"n_repeat": 20, "data": {"data_name": "dsprite", "data_size": [5000, 10000]}, "train_params": {"n_epoch": 300, "batch_size": 100, "n_sample": 2}}

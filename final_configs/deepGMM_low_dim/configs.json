@@ -1,0 +1,1 @@
+{"n_repeat": 20, "data": {"data_name": "demand", "data_size": [5000, 10000], "rho": [0.1, 0.25, 0.5, 0.75, 0.9]}, "train_params": {"primal_iter": 1, "dual_iter": 5, "n_epoch": 20000, "primal_weight_decay": 0.0, "dual_weight_decay": 0.0}}

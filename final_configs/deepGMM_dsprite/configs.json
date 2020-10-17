@@ -1,0 +1,1 @@
+{"n_repeat": 20, "data": {"data_name": "dsprite", "data_size": [5000, 10000]}, "train_params": {"primal_iter": 1, "dual_iter": 1, "n_epoch": 300, "primal_weight_decay": 0.0, "dual_weight_decay": 0.0}}
