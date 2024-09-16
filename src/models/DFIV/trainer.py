@@ -12,6 +12,8 @@ import numpy as np
 from src.models.DFIV.nn_structure import build_extractor
 from src.models.DFIV.monitor import DFIVMonitor
 from src.models.DFIV.model import DFIVModel
+from src.models.DFIV.data_loader import get_minibatch_loader
+
 from src.data import generate_train_data, generate_test_data
 from src.data.data_class import TrainDataSet, TrainDataSetTorch, TestDataSetTorch
 from src.utils.pytorch_linear_reg_utils import linear_reg_loss, fit_linear, linear_reg_pred
@@ -40,6 +42,8 @@ class DFIVTrainer(object):
         self.treatment_weight_decay = train_params["treatment_weight_decay"]
         self.instrumental_weight_decay = train_params["instrumental_weight_decay"]
         self.covariate_weight_decay = train_params["covariate_weight_decay"]
+        self.stage1_minibatch = train_params.get("stage1_minibatch", None)
+        self.stage2_minibatch = train_params.get("stage2_minibatch", None)
 
         # build networks
         networks = build_extractor(data_configs["data_name"])
@@ -87,6 +91,7 @@ class DFIVTrainer(object):
             train_2nd_t = train_2nd_t.to_gpu()
             test_data_t = test_data_t.to_gpu()
 
+        
         if self.monitor is not None:
             new_rand_seed = np.random.randint(1e5)
             new_data_config = copy.copy(self.data_config)
@@ -100,11 +105,20 @@ class DFIVTrainer(object):
         self.lam1 *= train_1st_t[0].size()[0]
         self.lam2 *= train_2nd_t[0].size()[0]
 
+        if self.stage1_minibatch is None:
+            self.stage1_minibatch = train_1st_t.treatment.shape[0]
+
+        if self.stage2_minibatch is None:
+            self.stage2_minibatch = train_2nd_t.treatment.shape[0]
+            
         for t in range(self.n_epoch):
-            self.stage1_update(train_1st_t, verbose)
-            if self.covariate_net:
-                self.update_covariate_net(train_1st_t, train_2nd_t, verbose)
-            self.stage2_update(train_1st_t, train_2nd_t, verbose)
+            stage1_loader = get_minibatch_loader(train_1st_t, self.stage1_minibatch)
+            stage2_loader = get_minibatch_loader(train_2nd_t, self.stage2_minibatch)
+            for train_1st_t_sub, train_2nd_t_sub in zip(stage1_loader, stage2_loader):
+                self.stage1_update(train_1st_t_sub, verbose)
+                if self.covariate_net:
+                    self.update_covariate_net(train_1st_t_sub, train_2nd_t_sub, verbose)
+                self.stage2_update(train_1st_t_sub, train_2nd_t_sub, verbose)
             if self.monitor is not None:
                 self.monitor.record(verbose)
             if verbose >= 1:
@@ -138,7 +152,7 @@ class DFIVTrainer(object):
         self.instrumental_net.train(True)
         if self.covariate_net:
             self.covariate_net.train(False)
-
+        
         treatment_feature = self.treatment_net(train_1st_t.treatment).detach()
         for i in range(self.stage1_iter):
             self.instrumental_opt.zero_grad()
